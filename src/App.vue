@@ -1,13 +1,17 @@
 <template>
   <div id="app">
-    <Header />
+    <Header 
+      :correctAnswers="correctAnswers"
+      :totalQuestions="totalQuestions"
+    />
 
     <div class="columns">
       <QuestionBox
         class="column is-half is-offset-3"
         v-if="questions.length > 0"
-        v-bind:questionData="questions[questionIndex]"
-        v-bind:next="handleNext"
+        :questionData="questions[questionIndex]"
+        :next="handleNext"
+        :handleCorrectAnswer="handleCorrectAnswer"
       />
     </div>
   </div>
@@ -29,6 +33,9 @@ export default {
     return {
       questions: [],
       questionIndex: 0,
+
+      correctAnswers: 0,
+      totalQuestions: 0
     }
   },
 
@@ -38,6 +45,12 @@ export default {
 
       if (this.questionIndex >= 0 && this.questionIndex < finalQuestionIndex) {
         this.questionIndex++;
+      }
+    },
+
+    handleCorrectAnswer(isCorrect) {
+      if (isCorrect) {
+        this.correctAnswers++;
       }
     }
   },
@@ -52,6 +65,7 @@ export default {
     const { results } = questionsResponse;
     
     this.questions = results;
+    this.totalQuestions = results.length;
   }
   
 }

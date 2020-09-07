@@ -8,13 +8,24 @@
                     </a>
 
                     <a class="navbar-item is-tab is-active">
-                        Counter: 4/10
+                        Counter: {{correctAnswers}}/{{totalQuestions}}
                     </a>
                 </div>
             </div>
         </nav>
     </header>
 </template>
+
+<script>
+    export default {
+        name: 'Header',
+
+        props: [
+            'correctAnswers',
+            'totalQuestions'
+        ]
+    }
+</script>
 
 <style scoped lang="scss">
 </style>

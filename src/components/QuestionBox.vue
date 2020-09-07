@@ -14,11 +14,11 @@
                             <p>Click on the answer you think it's the right one.</p>
 
                             <ul class="list">
-                                <li v-for="(answer, index) in answers" :key="index">
+                                <li v-for="(answer, index) in shuffledAnswers" :key="index">
                                     <button
                                         class="button"
                                         @click="handleSelectedIndex(index)"
-                                        :class="[selectedIndex === index && 'selected']"
+                                        :class="answerClass(index)"
                                     >
                                         {{answer}}
                                     </button>
@@ -27,7 +27,11 @@
                         </main>
 
                         <div class="columns">
-                            <button class="button column is-3 is-info">
+                            <button
+                                class="button column is-3 is-info"
+                                @click="handleAnswerSubmit"
+                                :disabled="selectedIndex === null || answered"
+                            >
                                 submit
                             </button>
 
@@ -46,19 +50,23 @@
 </template>
 
 <script>
-    import _ from 'lodash'
+    import _ from 'lodash';
+
     export default {
         name: 'QuestionBox',
 
         props: {
             questionData: Object,
             next: Function,
+            handleCorrectAnswer: Function,
         },
 
         data() {
             return {
                 selectedIndex: null,
+                correctIndex: null,
                 shuffledAnswers: [],
+                answered: false,
             }
         },
 
@@ -67,16 +75,52 @@
                 this.selectedIndex = index;
             },
 
+            getAnswersArray() {
+                return [...this.questionData.incorrect_answers, this.questionData.correct_answer];
+            },
+
             shuffleAnswers() {
-                const answers = [...this.questionData.incorrect_answers, this.questionData.correct_answer];
+                const answers = this.getAnswersArray();
                 
                 this.shuffledAnswers = _.shuffle(answers);
+                this.correctIndex = this.shuffledAnswers.indexOf(this.questionData.correct_answer);
+            },
+
+            handleAnswerSubmit() {
+                this.answered = true;
+
+                let isCorrect = false;
+
+                const selectedAnswer = this.shuffledAnswers[this.selectedIndex];
+
+                if (selectedAnswer === this.questionData.correct_answer) {
+                    isCorrect = true;
+
+                    this.handleCorrectAnswer(isCorrect);
+                }
+            },
+
+            answerClass(index) {
+                let answerClass = '';
+
+                if (this.selectedIndex === index && !this.answered) {
+                    answerClass = 'selected';
+                } else if (this.answered && this.correctIndex === index) {
+                    answerClass = 'correct';
+                } else if (this.answered && this.selectedIndex === index && this.correctIndex !== index) {
+                    answerClass = 'incorrect';
+                }
+                
+                return answerClass;
             }
         },
 
         computed: {
             answers() {
-                const answers = [...this.questionData.incorrect_answers, this.questionData.correct_answer];
+                const answers = [...this.questionData.incorrect_answers];
+                answers.push(this.questionData.correct_answer);
+
+
 
                 return answers;
             }
@@ -85,9 +129,11 @@
         watch: {
             questionData: {
                 immediate: true,
+
                 handler() {
                     this.selectedIndex = null;
                     this.shuffleAnswers();
+                    this.answered = false;
                 }
             }
         },
