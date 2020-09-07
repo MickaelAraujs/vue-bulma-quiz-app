@@ -11,14 +11,18 @@
                         </header>
 
                         <main class="main">
-                            <p>some text related to the answers</p>
+                            <p>Click on the answer you think it's the right one.</p>
 
                             <ul class="list">
-                                <li>Answer 1</li>
-                                <li>Answer 2</li>
-                                <li>Answer 3</li>
-                                <li>Answer 4</li>
-                                <li>Answer 5</li>
+                                <li v-for="(answer, index) in answers" :key="index">
+                                    <button
+                                        class="button"
+                                        @click="handleSelectedIndex(index)"
+                                        :class="[selectedIndex === index && 'selected']"
+                                    >
+                                        {{answer}}
+                                    </button>
+                                </li>
                             </ul>
                         </main>
 
@@ -42,6 +46,7 @@
 </template>
 
 <script>
+    import _ from 'lodash'
     export default {
         name: 'QuestionBox',
 
@@ -49,11 +54,48 @@
             questionData: Object,
             next: Function,
         },
+
+        data() {
+            return {
+                selectedIndex: null,
+                shuffledAnswers: [],
+            }
+        },
+
+        methods: {
+            handleSelectedIndex(index) {
+                this.selectedIndex = index;
+            },
+
+            shuffleAnswers() {
+                const answers = [...this.questionData.incorrect_answers, this.questionData.correct_answer];
+                
+                this.shuffledAnswers = _.shuffle(answers);
+            }
+        },
+
+        computed: {
+            answers() {
+                const answers = [...this.questionData.incorrect_answers, this.questionData.correct_answer];
+
+                return answers;
+            }
+        },
+
+        watch: {
+            questionData: {
+                immediate: true,
+                handler() {
+                    this.selectedIndex = null;
+                    this.shuffleAnswers();
+                }
+            }
+        },
     }
 </script>
 
 <style scoped lang="scss">
-    .header h6 {
+    .header h6, .main p {
         text-align: center;
     }
 
@@ -74,5 +116,26 @@
 
     .button + .button {
         margin-left: 4rem;
+    }
+
+    .list {
+        list-style: none;
+    }
+
+    .list * {
+        width: 100%;
+        margin-top: 1.2rem;
+    }
+
+    .correct {
+        background-color: #77BD8B;
+    }
+
+    .incorrect {
+        background-color: #BC0022;
+    }
+
+    .selected {
+        background-color: #5199FF;
     }
 </style>
